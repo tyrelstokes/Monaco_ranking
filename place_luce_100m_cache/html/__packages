@@ -1,0 +1,10 @@
+base
+cmdstanr
+foreach
+ggplot2
+ggthemes
+janitor
+gt
+scales
+readr
+dplyr
