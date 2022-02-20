@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,cache =TRUE)
+knitr::opts_chunk$set(echo = TRUE,cache =TRUE, warning = FALSE)
 ```
 
 This is a companion document to a presentation I gave at the IOC conference on injury and prevention. It was a workshop trying to think about how to model performance data in the Olympic context. I chose the 100m as an example because it has many nice common features for olympic sports and it is well known and understood. See the slides at the following [link](https://statsbystokes.wordpress.com/2022/02/15/careful-what-you-throw-out-modelling-rank-data/).
@@ -92,7 +92,7 @@ fit <- mod$sample(data = stan_dt,iter_warmup = 2000, iter_sampling = 2000,parall
 
 Now a recreation of some of the plots seen in the slides.
 
-```{r}
+```{r, results = 'hide'}
 #############################
 ################################
 
@@ -190,7 +190,7 @@ The stan file could be easily modified to make any other athletes in the data ra
 
 Here is another plot where we look at the latent ranks the model gives for the 8 finalists compared to all 87 athletes who ran at least one race in either event.
 
-```{r}
+```{r, results = 'hide'}
 
 ## This gets you the ranking plot amoung all participants
 overall_rank_draws <- fit$draws("posterior_latent_ranks", format = "df")
@@ -219,4 +219,53 @@ odata %>%  ggplot(aes(x= Name,y= Rank))+ geom_boxplot(aes(color = Name)) +
 
 Usain and Blake are strongly considered 1 and 2 respectively by the model. Notice also that the top 5 in the event (before Tyson Gay's suspension) are all for sure top 8 runners. The other 3 in the finals, not so much.
 
+Here we can make a massive graph with all of the players.
+
+
+
+```{r,results = 'hide'}
+
+## This gets you the ranking plot amoung all participants
+
+
+
+odata2 <- foreach(i = 1:length(athletes), .combine = rbind)%do%{
+  
+  out <-  data.frame(Name = athletes[i], Rank = as.vector(overall_rank_draws[,i]))
+  
+  names(out)[2] <- "Rank"
+  out
+}
+
+
+mrank <- odata2 %>% group_by(Name) %>% summarise(mrank = mean(Rank))
+
+mrank <- mrank %>% arrange(mrank)
+
+
+
+odata2$Name <- factor(odata2$Name,levels = rev(mrank$Name))
+
+
+```
+
+
+
+
+
+
+Take the top n number of players and plot
+
+
+```{r}
+top_n <- 25
+
+odata2 %>% filter(Name %in% mrank$Name[1:top_n]) %>% ggplot(aes(x= Name,y= Rank))+ geom_boxplot(aes(color = Name)) + 
+  theme(axis.text.x = element_text(angle=65, vjust=0.6)) + 
+  labs(title="Estimated Ranks", 
+       subtitle=" Amoung 87 Participants in WC2011 + 2012 Olympics",
+       x="Finalist Name",
+       y="Rank") + coord_flip() +theme_fivethirtyeight()+scale_y_continuous(breaks = c(1,10,20,30,40,50,60,70,80,90))+
+  theme(legend.position="none")
+```
 
