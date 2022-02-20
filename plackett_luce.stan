@@ -19,34 +19,40 @@ data {
   int<lower=1> N; //the number of observations
   int<lower=1> P;// number of participants
   int x[N,8];// player id matrix. first column is first, second got second etc
-  int real_ranks[P];
-  real P1;
+  int nps[N];
+  int n_types;// number of race types -e.g heats, semis, finals
+  int type[N];
 }
 
 // The parameters accepted by the model. Our model
 // accepts two parameters 'mu' and 'sigma'.
 parameters {
   vector[P] beta;
-  real<lower=0> sigma;
+  positive_ordered[(n_types-1)] sig_0;
+}transformed parameters{
+  
+ vector[n_types] sigma;
+ 
+ sigma[1] =1.0;
+ 
+for(j in 2:n_types){
+  sigma[j] = 1.0 + sig_0[(j-1)];
 }
-
-// The model to be estimated. We model the output
-// 'y' to be normally distributed with mean 'mu'
-// and standard deviation 'sigma'.
+  
+}
 model {
   
-  int R;
-  R = 8;
+
  
  for(i in 1:N){
 //y[i,:] ~ luce_lmpf(beta);
 
-target += luce_lpmf(x[i,:]|beta,sigma,R);
+target += luce_lpmf(x[i,:]|beta,sigma[type[i]],nps[i]);
 }
   
  
  beta ~ normal(0,3);
- sigma ~ normal(0, 0.5);
+ sig_0 ~ normal(0, 0.5);
  
 }
 
