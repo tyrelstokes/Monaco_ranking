@@ -147,12 +147,13 @@ for(j in 2:n_types){
 }
 model{
   
-
+vector[N] out;
  
 for(i in 1:N){ 
-target += luce2_lpmf(x[i,:]|beta2, sigma[type[i]], nps[i]);
+out[i] = luce2_lpmf(x[i,:]|beta2, sigma[type[i]], nps[i]);
 }
 
+target += sum(out);
 
   
  beta ~ normal(0,3);
