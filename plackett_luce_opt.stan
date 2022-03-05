@@ -18,20 +18,20 @@ functions{
   real luce2_lpmf(int[] x,vector beta, real sigma,int R){
  real out = 0.0;
  vector[R] svec;
- vector[R] pvec;
+ //vector[R] pvec;
  
 
  
  svec = beta[x[1:R]]/sigma;
  
-  out += categorical_logit_lpmf(1|svec);
+  //out += categorical_logit_lpmf(1|svec);
 
- for(i in 2:(R-1)){
+ for(i in 1:(R-1)){
 
-    pvec[i-1] = 0.0;
-    pvec[i:R] = softmax(svec[i:R]);
+   // pvec[i-1] = 0.0;
+    //pvec[i:R] = softmax(svec[i:R]);
     
-    out += categorical_lpmf(i|pvec);
+    out += categorical_logit_lpmf(1|svec[i:R]);
  }
   return out;
   
