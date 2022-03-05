@@ -131,15 +131,12 @@ data {
 // The parameters accepted by the model. Our model
 // accepts two parameters 'mu' and 'sigma'.
 parameters {
-  vector[P] beta;
+  vector[(P-1)] beta;
   positive_ordered[(n_types-1)] sig_0;
 }transformed parameters{
   
  vector[n_types] sigma;
- vector[(P+1)] beta2;
- 
- beta2[1] = negative_infinity();
- beta2[2:(P+1)] = beta;
+ vector[P] beta2 = append_row(beta, 0);
  
  sigma[1] =1.0;
  
@@ -153,7 +150,7 @@ model{
 
  
 for(i in 1:N){ 
-target += luce2_lpmf(x[i,:]|beta, sigma[type[i]], nps[i]);
+target += luce2_lpmf(x[i,:]|beta2, sigma[type[i]], nps[i]);
 }
 
 
@@ -168,9 +165,9 @@ target += luce2_lpmf(x[i,:]|beta, sigma[type[i]], nps[i]);
  int replay_ranking[8];
 
  
- posterior_latent_ranks = ranker(to_array_1d(beta),P);
+ posterior_latent_ranks = ranker(to_array_1d(beta2),P);
  
- replay_ranking = luce_rng(8,beta[finals],1);
+ replay_ranking = luce_rng(8,beta2[finals],1);
   
 
   
