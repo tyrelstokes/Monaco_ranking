@@ -24,11 +24,14 @@ fints <- stan_dt$finals
 
 library(cmdstanr)
 
-mod <- cmdstan_model("plackett_luce.stan")
+mod <- cmdstan_model("plackett_luce_opt.stan")
 
 
-fit <- mod$sample(data = stan_dt,iter_warmup = 2000, iter_sampling = 2000,parallel_chains = 4)
+fit_variational <- mod$variationl(data = stan_dt)
+fit <- mod$sample(data = stan_dt)
+#library(rstan)
 
+#fft <- stan("plackett_luce_opt.stan",data = stan_dt)
 
 #############################
 ################################
