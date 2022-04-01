@@ -1,5 +1,5 @@
 functions{
-  real luce_lpmf(int[] x,vector beta, real sigma,int R){
+  real luce_lpmf(array[] int x,vector beta, real sigma,int R){
  real out = 0.0;
  real denom = 0.0;
  
@@ -15,8 +15,9 @@ functions{
   
 }
 
-  real luce2_lpmf(int[] x,vector beta, real sigma,int R){
- real out = 0.0;
+  real luce2_lpmf(array[] int x,vector beta, real sigma,int R){
+ real out;
+ vector[R-1] out1;
  vector[R] svec;
  //vector[R] pvec;
  
@@ -31,8 +32,10 @@ functions{
    // pvec[i-1] = 0.0;
     //pvec[i:R] = softmax(svec[i:R]);
     
-    out += categorical_logit_lpmf(1|svec[i:R]);
+    out1[i] = categorical_logit_lpmf(1|svec[i:R]);
  }
+ 
+ out = sum(out1);
   return out;
   
 }
@@ -40,8 +43,8 @@ functions{
 
 
 
- int[] ranker(real[] beta,int N){
-   int out[N];
+ array[] int ranker(array[] real beta,int N){
+   array[N] int  out;
    int med = 0;
    real b1;
    real b2;
@@ -74,7 +77,7 @@ functions{
    
  }
  
- vector betas_remain(int R,vector betas, int[] excluded_ints, int n_rank, real sigma){
+ vector betas_remain(int R,vector betas, array[] int excluded_ints, int n_rank, real sigma){
    
    vector[R] out;
    real denom;
@@ -92,11 +95,11 @@ functions{
    
  }
  
- int[] luce_rng(int R, vector betas, real sigma){
+array[] int luce_rng(int R, vector betas, real sigma){
    
    vector[R] probs;
-   int win_integer[R];
-   int out[R];
+   array[R] int win_integer;
+   array[R] int out;
    
      for(i in 1:R){
     if(i!=1){
@@ -121,11 +124,11 @@ functions{
 data {
   int<lower=1> N; //the number of observations
   int<lower=1> P;// number of participants
-  int x[N,8];// player id matrix. first column is first, second got second etc
-  int nps[N];// number of participants in the race (7-8 in this data set)
+  array[N,8]  int x;// player id matrix. first column is first, second got second etc
+  array[N] int nps;// number of participants in the race (7-8 in this data set)
   int n_types;// number of race types -e.g heats, semis, finals )
-  int type[N]; // (ordered from most important to least - i.e finals =1, semis =2, heats =2)
-  int finals[8]; // The integers of the athletes in the finals (you could supply any 8 athletes to simulate a race with those participants if desired)
+  array[N] int type; // (ordered from most important to least - i.e finals =1, semis =2, heats =2)
+  array[8] int finals; // The integers of the athletes in the finals (you could supply any 8 athletes to simulate a race with those participants if desired)
 }
 
 // The parameters accepted by the model. Our model
@@ -161,14 +164,14 @@ target += sum(out);
  
 }generated quantities{
   
- int posterior_latent_ranks[P];
+ array[P] int posterior_latent_ranks;
 
- int replay_ranking[8];
+ array[8] int replay_ranking;
 
  
  posterior_latent_ranks = ranker(to_array_1d(beta2),P);
  
- replay_ranking = luce_rng(8,beta2[finals],1);
+ realized_ranking = luce_rng(73,beta,sigma);
   
 
   

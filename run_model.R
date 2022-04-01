@@ -28,10 +28,10 @@ mod <- cmdstan_model("plackett_luce_opt.stan")
 
 
 fit_variational <- mod$variationl(data = stan_dt)
-fit <- mod$sample(data = stan_dt)
-#library(rstan)
+fit <- mod$sample(data = stan_dt,iter_warmup = 4000,iter_sampling = 4000)
+library(rstan)
 
-#fft <- stan("plackett_luce_opt.stan",data = stan_dt)
+fft <- stan("plackett_luce_opt.stan",data = stan_dt)
 
 #############################
 ################################

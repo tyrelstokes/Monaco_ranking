@@ -111,7 +111,10 @@ parameters {
 }transformed parameters{
   
  vector[n_types] sigma;
- 
+ //vector[P] beta = append_row(beta_0,0.0);
+// vector[P] beta;
+ //beta[1] = 0.0;
+ //beta[2:P] = beta_0;
  sigma[1] =1.0;
  
 for(j in 2:n_types){
@@ -121,11 +124,13 @@ for(j in 2:n_types){
 }
 model{
   
-
+vector[N] increment;
  
  for(i in 1:N){
-target += luce_lpmf(x[i,:]|beta,sigma[type[i]],nps[i]);
+increment[i] = luce_lpmf(x[i,:]|beta,sigma[type[i]],nps[i]);
 }
+
+target += sum(increment);
   
  beta ~ normal(0,3);
  sig_0 ~ normal(0, 0.5);
